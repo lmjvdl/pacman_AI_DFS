@@ -205,3 +205,14 @@ button:hover {
   cursor: pointer;
   margin-right: 0;
 }
+
+
+.result {
+  width: 100%;
+  margin-bottom: 30px;
+  font-size: 30px;
+  color: red;
+  display: flex;
+  justify-items: center;
+  justify-content: center;
+}

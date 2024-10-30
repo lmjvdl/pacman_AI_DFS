@@ -8,7 +8,9 @@ import "./App.css";
 
 const App: React.FC = () => {
   const [map, setMap] = useState<CellType[][]>(generateRandomMap(10, 10));
+  const [startPosition, setStartPosition] = useState<Position>();
   const [isGameStarted, setIsGameStarted] = useState(false);
+  const [isPathFound, setIsPathFound] = useState<boolean | null>(null);
   const [agentPosition, setAgentPosition] = useState<Position>({ x: 1, y: 1 });
   const [foodPosition, setFoodPosition] = useState<Position>({ x: 8, y: 8 });
   const [path, setPath] = useState<Array<{ pos: Position; move: string }>>([]);
@@ -43,15 +45,20 @@ const App: React.FC = () => {
     const newMap = generateRandomMap(rows, cols);
     setMap(newMap);
     setAgentPosition(agentPosition);
+    setStartPosition(agentPosition);
+    setFoodPosition(foodPosition);
     setFoodPosition(foodPosition);
     setIsGameStarted(true);
     setMovesList([]);
-
-    const foundPath = dfsFindPath(agentPosition, foodPosition, newMap);
-    if (foundPath) {
-      setPath(foundPath);
-      console.log("Game started! Path found:", foundPath);
+    console.log(foodPosition)
+    console.log(agentPosition)
+    const FoundPath = dfsFindPath(agentPosition, foodPosition, newMap);
+    if (FoundPath) {
+      setPath(FoundPath);
+      setIsPathFound(true);
+      console.log("Game started! Path found:", FoundPath);
     } else {
+      setIsPathFound(false);
       console.log("No path found!");
     }
   };
@@ -65,24 +72,35 @@ const App: React.FC = () => {
     <div>
       <h1 className="head-content">Pac-Man AI Game</h1>
       <Controls onStart={startGame} onGenerateNewMap={() => {}} onUploadMap={handleUploadMap} map={map}/>
+      
+      {isPathFound === false && (
+        <div className="result">
+          No path found! Please try again.
+        </div>
+      )}
+
+      
       <GameBoard
         map={map}
         agentPosition={agentPosition}
         foodPosition={foodPosition}
         movesList={movesList.map((m) => m.pos)}
       />
-      {isGameStarted && path.length === 0 && (
+      
+
+      {isGameStarted && path.length === 0 && isPathFound && (
         <div className="game-results">
           <h2 className="head-results">Game Results</h2>
           <span className="option-result">
             Starting Position:{" "}
             <span>
-              ({agentPosition.x}, {agentPosition.y})
+              ({startPosition?.x}, {startPosition?.y})
             </span>
           </span>
           <span className="option-result">
+            Food Position:{" "}
             <span>
-              Food Position: ({foodPosition.x}, {foodPosition.y})
+              ({foodPosition.x}, {foodPosition.y})
             </span>
           </span>
           <p className="option-result">
@@ -92,15 +110,13 @@ const App: React.FC = () => {
             <span>
               Moves:{" "}
               {movesList
-                .map(
-                  (move) =>
-                    `(${move.pos.x}, ${move.pos.y}) --> ${move.move} -->`
-                )
+                .map((move) => `-->(${move.pos.x}, ${move.pos.y}) --> ${move.move}`)
                 .join(" ")}
             </span>
           </p>
         </div>
       )}
+
     </div>
   );
 };

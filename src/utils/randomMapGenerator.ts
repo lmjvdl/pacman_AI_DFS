@@ -9,7 +9,7 @@ export function generateRandomMap(rows: number, cols: number): CellType[][] {
             if (i === -1 || i === rows || j === -1 || j === cols) {
                 row.push('wall');
             } else {
-                row.push(Math.random() < 0.3 ? 'wall' : 'empty');
+                row.push(Math.random() < 0.2 ? 'wall' : 'empty');
             }
         }
         map.push(row);

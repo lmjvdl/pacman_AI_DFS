@@ -62,7 +62,7 @@ const Controls: React.FC<ControlsProps> = ({
   };
 
   const handleStart = () => {
-    const agentPosition = { x: agentRow + 1, y: agentCol + 1 };
+    const agentPosition = { x: agentRow, y: agentCol};
     const foodPosition = { x: foodRow, y: foodCol };
 
     if (

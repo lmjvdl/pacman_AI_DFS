@@ -40,5 +40,5 @@ export function dfsFindPath(start: Position, goal: Position, map: string[][]): A
         // Optional: Unmark current position if you want to allow backtracking
         // visited.delete(serialize(current));
     }
-    return null; // Return null if no path is found
+    return null;
 }

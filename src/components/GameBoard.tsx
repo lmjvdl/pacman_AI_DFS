@@ -24,6 +24,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ map, agentPosition, foodPosition,
                         if (rowIndex === foodPosition.x && colIndex === foodPosition.y) {
                             cellType = 'food';
                         }
+                        
                         return <Cell key={colIndex} type={cellType} onPath={onPath} />;
                     })}
                 </div>
