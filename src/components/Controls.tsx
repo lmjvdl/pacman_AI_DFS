@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { Position } from "../types";
+import React, { useState } from "react";
+import { Position, CellType } from "../types";
 
 interface ControlsProps {
   onStart: (
     rows: number,
     cols: number,
-    agentPosition: Position,
-    foodPosition: Position
+    agentPos: Position,
+    foodPos: Position,
+    testMode: 'production' | 'expansion'
   ) => void;
   onGenerateNewMap: () => void;
-  map: string[][];
+  map: CellType[][] | null;
   onUploadMap: (
-    mapData: string[][],
+    mapData: CellType[][],
     agentPos: Position,
-    foodPos: Position
+    foodPos: Position,
+    testMode: 'production' | 'expansion'
   ) => void;
 }
 
@@ -21,182 +23,62 @@ const Controls: React.FC<ControlsProps> = ({
   onStart,
   onGenerateNewMap,
   map,
-  onUploadMap,
+  onUploadMap
 }) => {
   const [rows, setRows] = useState(10);
   const [cols, setCols] = useState(10);
-  const [agentRow, setAgentRow] = useState(1);
-  const [agentCol, setAgentCol] = useState(1);
-  const [foodRow, setFoodRow] = useState(8);
-  const [foodCol, setFoodCol] = useState(8);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [uploadMode, setUploadMode] = useState(false);
+  const [agentX, setAgentX] = useState(1);
+  const [agentY, setAgentY] = useState(1);
+  const [foodX, setFoodX] = useState(8);
+  const [foodY, setFoodY] = useState(8);
+  const [testMode, setTestMode] = useState<'production' | 'expansion'>('production');
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result) {
-          const lines = (reader.result as string).trim().split("\n");
-
-          const [rows, cols] = lines[0].split(",").map(Number);
-          const [agentRow, agentCol] = lines[1].split(",").map(Number);
-
-          const mapLines = lines.slice(2);
-          const mapData = mapLines.map((line) => line.split(""));
-
-          const agentPosition = { x: agentCol, y: agentRow };
-
-          const foodPosition = findFoodPosition(mapData);
-
-          if (foodPosition) {
-            onUploadMap(mapData, agentPosition, foodPosition);
-          } else {
-            console.error("Food position not found on the map.");
-          }
-        }
-      };
-      reader.readAsText(file);
+  const handleUploadMap = () => {
+    if (map) {
+      const agentPosition: Position = { x: agentX, y: agentY };
+      const foodPosition: Position = { x: foodX, y: foodY };
+      onUploadMap(map, agentPosition, foodPosition, testMode);
     }
   };
-
-  const handleStart = () => {
-    const agentPosition = { x: agentRow, y: agentCol};
-    const foodPosition = { x: foodRow, y: foodCol };
-
-    if (
-      agentPosition.x === foodPosition.x &&
-      agentPosition.y === foodPosition.y
-    ) {
-      setErrorMessage("Agent and Food positions must be different!");
-      return;
-    }
-
-    if (
-      agentPosition.x < 0 ||
-      agentPosition.x >= rows + 2 ||
-      agentPosition.y < 0 ||
-      agentPosition.y >= cols + 2 ||
-      foodPosition.x < 0 ||
-      foodPosition.x >= rows + 2 ||
-      foodPosition.y < 0 ||
-      foodPosition.y >= cols + 2
-    ) {
-      setErrorMessage("Positions of Agent or Food must be within map bounds!");
-      return;
-    }
-
-    setErrorMessage(null);
-    onStart(rows, cols, agentPosition, foodPosition);
-  };
-
-  const handleMode = () => {
-    setUploadMode((prevMode) => !prevMode);
-  };
-
-  const titleButton = uploadMode ? "Start random game" : "Upload test file";
 
   return (
     <div className="controls">
-      {uploadMode ? (
-        <input
-          id="attachment"
-          type="file"
-          accept=".txt"
-          onChange={handleFileUpload}
-        />
-      ) : (
-        <>
-          <h2>Set Map Size</h2>
-          <div className="form-group input-group">
-            <div className="input-container">
-              <input
-                type="number"
-                value={rows}
-                onChange={(e) => setRows(Number(e.target.value))}
-                min={2}
-                className="input-field"
-              />
-              <label>Number of Rows</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="number"
-                value={cols}
-                onChange={(e) => setCols(Number(e.target.value))}
-                min={2}
-                className="input-field"
-              />
-              <label>Number of Columns</label>
-            </div>
-          </div>
-
-          <h2>Set Agent and Food Position</h2>
-          <div className="input-group">
-            <div className="input-container">
-              <input
-                type="number"
-                value={agentRow}
-                onChange={(e) => setAgentRow(Number(e.target.value))}
-                min={0}
-                className="input-field"
-              />
-              <label>Agent Row</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="number"
-                value={agentCol}
-                onChange={(e) => setAgentCol(Number(e.target.value))}
-                min={0}
-                className="input-field"
-              />
-              <label>Agent Column</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="number"
-                value={foodRow}
-                onChange={(e) => setFoodRow(Number(e.target.value))}
-                min={0}
-                className="input-field"
-              />
-              <label>Food Row</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="number"
-                value={foodCol}
-                onChange={(e) => setFoodCol(Number(e.target.value))}
-                min={0}
-                className="input-field"
-              />
-              <label>Food Column</label>
-            </div>
-          </div>
-          <div className="buttons">
-            <button onClick={handleStart}>Start new game</button>
-            <button className="generate-button" onClick={onGenerateNewMap}>
-              Generate New Map
-            </button>
-            <button onClick={handleMode}>{titleButton}</button>
-          </div>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
-        </>
-      )}
+      <h2>Controls</h2>
+      <button onClick={() => onStart(rows, cols, { x: agentX, y: agentY }, { x: foodX, y: foodY }, testMode)}>
+        Start Game
+      </button>
+      <button onClick={onGenerateNewMap}>Generate New Map</button>
+      <button onClick={handleUploadMap} disabled={!map}>
+        Upload Map
+      </button>
+      {/* تنظیمات برای تعیین سطرها، ستون‌ها، موقعیت‌ها، و حالت تست */}
+      <div>
+        <label>Rows: </label>
+        <input type="number" value={rows} onChange={(e) => setRows(Number(e.target.value))} />
+        <label>Cols: </label>
+        <input type="number" value={cols} onChange={(e) => setCols(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Agent X: </label>
+        <input type="number" value={agentX} onChange={(e) => setAgentX(Number(e.target.value))} />
+        <label>Agent Y: </label>
+        <input type="number" value={agentY} onChange={(e) => setAgentY(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Food X: </label>
+        <input type="number" value={foodX} onChange={(e) => setFoodX(Number(e.target.value))} />
+        <label>Food Y: </label>
+        <input type="number" value={foodY} onChange={(e) => setFoodY(Number(e.target.value))} />
+      </div>
+      <div>
+        <label>Test Mode: </label>
+        <select value={testMode} onChange={(e) => setTestMode(e.target.value as 'production' | 'expansion')}>
+          <option value="production">Production</option>
+          <option value="expansion">Expansion</option>
+        </select>
+      </div>
     </div>
   );
 };
-export default Controls;
 
-const findFoodPosition = (mapData: string[][]): { x: number; y: number } => {
-  for (let y = 0; y < mapData.length; y++) {
-    for (let x = 0; x < mapData[y].length; x++) {
-      if (mapData[y][x] === "f") {
-        return { x, y };
-      }
-    }
-  }
-  return { x: -1, y: -1 };
-};
+export default Controls;

@@ -1,36 +1,48 @@
-import React from 'react';
-import Cell from './Cell';
-import { Position, CellType } from '../types';
+// GameBoard.tsx
+import React from "react";
+import { Position, CellType } from "../types";
 
 interface GameBoardProps {
-    map: CellType[][];
-    agentPosition: Position;
-    foodPosition: Position;
-    movesList: Position[];
+  rows: number;
+  cols: number;
+  agentPosition: Position;
+  foodPosition: Position;
+  testMode: "production" | "expansion";
+  map: CellType[][];
+  movesList: string[]; // اضافه کردن movesList به props
 }
 
-const GameBoard: React.FC<GameBoardProps> = ({ map, agentPosition, foodPosition, movesList }) => {
-    return (
-        <div className="game-board">
-            {map.map((row, rowIndex) => (
-                <div key={rowIndex} className="row">
-                    {row.map((cell, colIndex) => {
-                        let cellType = cell;
-                        const onPath = movesList.some(move => move.x === rowIndex && move.y === colIndex);
-                        if (rowIndex === agentPosition.x && colIndex === agentPosition.y) {
-                            cellType = 'agent';
-                        }
-                        
-                        if (rowIndex === foodPosition.x && colIndex === foodPosition.y) {
-                            cellType = 'food';
-                        }
-                        
-                        return <Cell key={colIndex} type={cellType} onPath={onPath} />;
-                    })}
-                </div>
+const GameBoard: React.FC<GameBoardProps> = ({
+  rows,
+  cols,
+  agentPosition,
+  foodPosition,
+  testMode,
+  map,
+  movesList,
+}) => {
+  return (
+    <div>
+      <h3>Game Board</h3>
+      <div>
+        {map.map((row, rowIndex) => (
+          <div key={rowIndex}>
+            {row.map((cell, colIndex) => (
+              <span key={colIndex}>{cell}</span>
             ))}
-        </div>
-    );
+          </div>
+        ))}
+      </div>
+      <div>
+        <h4>Moves List</h4>
+        <ul>
+          {movesList.map((move, index) => (
+            <li key={index}>{move}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 };
 
 export default GameBoard;

@@ -3,7 +3,7 @@ import { Position, Percept, ActionType } from '../types';
 export function Environment(action: ActionType, position: Position, map: string[][]): Percept {
     const newPosition = getNewPosition(action, position);
     const cellType = map[newPosition.x][newPosition.y];
-
+    
     return {
         position: newPosition,
         cellType: cellType as 'empty' | 'wall' | 'agent' | 'food' 
